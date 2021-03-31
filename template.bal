@@ -23,7 +23,7 @@ configurable string & readonly callbackURL = ?;
 configurable http:OAuth2DirectTokenConfig & readonly sfdcOauthConfig = ?;
 configurable string & readonly sfdc_baseUrl = ?;
 
-// Salesforce client configuration
+// Google Sheet client configuration
 configurable http:OAuth2DirectTokenConfig & readonly sheetOauthConfig = ?;
 configurable string & readonly spreadsheetId = ?;
 configurable string & readonly workSheetName = ?;
@@ -74,21 +74,25 @@ service / on gSheetListener {
             if (startColumnPosition is int && endColumnPosition is int && startingRowPosition is int) {
                 
                 // Get the updated Column Names 
-                string a1Notation = string `${getColumnLetter(startColumnPosition)}1:${getColumnLetter(endColumnPosition)}1`;
-                sheets:Range getValuesResult = check spreadsheetClient->getRange(spreadsheetId, workSheetName, a1Notation);
+                string a1Notation = 
+                    string `${getColumnLetter(startColumnPosition)}1:${getColumnLetter(endColumnPosition)}1`;
+                sheets:Range getValuesResult = check spreadsheetClient->getRange(spreadsheetId, workSheetName, 
+                    a1Notation);
                 (int|string|float)[][] columnNames = getValuesResult.values;
 
                 // Get the updated Values 
                 (int|string|float)[][]? data = eventInfo?.editEventInfo?.newValues;
 
                 // Get the record ID to update
-                (string|int|float) recordId = check spreadsheetClient->getCell(spreadsheetId, workSheetName, string `A${startingRowPosition}`);
+                (string|int|float) recordId = check spreadsheetClient->getCell(spreadsheetId, workSheetName, 
+                    string `A${startingRowPosition}`);
 
                 if (data is (int|string|float)[][]) {
                     map<json> updatedContact = createJson(columnNames[0], data[0]);
                     boolean|sfdc:Error res = baseClient->updateContact(recordId.toString(), updatedContact);
                     if (res is boolean) {
-                        string outputMessage = (res == true) ? "Contact Updated Successfully!" : "Failed to Update the Contact";
+                        string outputMessage = (res == true) ? "Contact Updated Successfully!" : 
+                            "Failed to Update the Contact";
                         log:print(outputMessage);
                     } else {
                         log:printError(msg = res.message());
