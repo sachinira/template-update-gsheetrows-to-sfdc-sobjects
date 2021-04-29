@@ -1,9 +1,13 @@
-# Template: Update Google Sheet to Send Gmail
+# Template: Update Google Sheet to Update Salesforce
 When Google Sheet rows are updated, update custom Salesforce objects.<br>
 
-When there is a need to store our data specific to bussiness quicky, we can use the Google Sheetsas a quick . But if we want to store it in a reliable way, we can use Salesforce custom objects. Now, you don't need to waste time copying and pasting the data from Google Sheet to Salesforce. In such cases we can use an integration between Google Sheetes and Salesforce to make this task easier
+When there is a need to store our data specific to bussiness quicky, we can use the Google Sheetsas a quick . But if
+we want to store it in a reliable way, we can use Salesforce custom objects. Now, you don't need to waste time copying 
+and pasting the data from Google Sheet to Salesforce. In such cases we can use an integration between Google Sheetes and 
+Salesforce to make this task easier
  
-This template is used for the scenario that once a specific column is updated in a Google Sheet, an objedct is updated in the Salesforce.
+This template is used for the scenario that once a specific column is updated in a Google Sheet, an objedct is updated 
+in the Salesforce.
 
 ## Use this template to
 - Simultaneously update data inside Salesforce object once the data about that object is changed.
@@ -29,7 +33,7 @@ This template is used for the scenario that once a specific column is updated in
   <tr>
    <td>Ballerina Language Version
    </td>
-   <td>Swan Lake Alpha2
+   <td>Swan Lake Alpha 4
    </td>
   </tr>
   <tr>
@@ -42,12 +46,6 @@ This template is used for the scenario that once a specific column is updated in
    <td>Google Sheet API
    </td>
    <td>v4
-   </td>
-  </tr>
-  <tr>
-   <td>Google Drive API
-   </td>
-   <td>v3
    </td>
   </tr>
   <tr>
@@ -111,7 +109,13 @@ obtaining OAuth2 credentials, go to [Salesforce documentation](https://help.sale
     3. Name your project. (Example: Name the project `GSheet_Ballerina_Trigger`)
     4. Remove all the code that is currently in the Code.gs file, and replace it with this:
         ```
-       function atEdit(e) {
+        function atChange(e){
+            if (e.changeType == "REMOVE_ROW") {
+                saveDeleteStatus(1);
+            }
+        }
+
+        function atEdit(e){
             var source = e.source;
             var range = e.range;
 
@@ -142,7 +146,8 @@ obtaining OAuth2 credentials, go to [Salesforce documentation](https://help.sale
                     'lastRowWithContent' : range.getSheet().getLastRow(),
                     'lastColumnWithContent' : range.getSheet().getLastColumn(),
                     'previousLastRow' : previousLastRow,
-                    'eventType' : eventType
+                    'eventType' : eventType,
+                    'eventData' : e
             };
             var payload = JSON.stringify(formData);
 
@@ -152,7 +157,7 @@ obtaining OAuth2 credentials, go to [Salesforce documentation](https://help.sale
                 'payload' : payload
             };
 
-            UrlFetchApp.fetch('"<BASE_URL>"/onEdit/', options);
+            UrlFetchApp.fetch('<BASE_URL>/onEdit/', options);
 
             saveValue(range.getSheet().getLastRow());
             saveDeleteStatus(0);
@@ -204,7 +209,6 @@ obtaining OAuth2 credentials, go to [Salesforce documentation](https://help.sale
 ```
 [<ORG_NAME>.template_update_gsheet_rows_to_sfdc_sobjects]
 port = <PORT>
-callbackURL = "<CALLBACK_URL>"
 spreadsheetId = "<SPREADSHEET_ID>"
 workSheetName = "<WORKSHEET_NAME>"
 sfdc_baseUrl = "<SFDC_BASE_URL>"
@@ -213,12 +217,6 @@ sfdc_baseUrl = "<SFDC_BASE_URL>"
 clientId = "<CLIENT_ID>"
 clientSecret = "<CLIENT_SECRET>"
 refreshUrl = "<GSHEET_REFRESH_URL>"
-refreshToken = "<REFRESH_TOKEN>"
-
-[<ORG_NAME>.template_update_gsheet_rows_to_sfdc_sobjects.driveOauthConfig]
-clientId = "<CLIENT_ID>"
-clientSecret = "<CLIENT_SECRET>"
-refreshUrl = "<DRIVE_REFRESH_URL>"
 refreshToken = "<REFRESH_TOKEN>"
 
 [<ORG_NAME>.template_update_gsheet_rows_to_sfdc_sobjects.sfdcOauthConfig]
